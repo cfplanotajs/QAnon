@@ -70,7 +70,9 @@ def build_reports(
     freeze_header_row: bool,
 ) -> None:
     df = _issues_dataframe(issues, sort_by_severity=sort_by_severity)
-    issues_csv_path.parent.mkdir(parents=True, exist_ok=True)
+    for path in (issues_csv_path, issues_xlsx_path, summary_md_path):
+        path.parent.mkdir(parents=True, exist_ok=True)
+
     df.to_csv(issues_csv_path, index=False, encoding="utf-8")
 
     df.to_excel(issues_xlsx_path, index=False, engine="openpyxl")
@@ -106,6 +108,10 @@ def build_reports(
         "",
         "## Output Files",
         *[f"- `{path.as_posix()}`" for path in output_files],
+        "",
+        "## Recommended Next Action",
+        "- Confirm that screenshots, extracted_cards.json, raw_issues.json, qa_issues.csv, qa_issues.xlsx, and qa_summary.md were generated correctly.",
+        "- Then proceed to Phase 2: Ollama visual extraction.",
         "",
         "Phase 1 only: this run verifies PDF rendering, schema validation, and report generation. Real extraction and QA checks will be added in later phases.",
     ])
