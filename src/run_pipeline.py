@@ -20,12 +20,29 @@ def _write_json(path: Path, payload: list[dict]) -> None:
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def resolve_output_path(base_output_dir: Path, configured_path: str) -> Path:
+    configured = Path(configured_path)
+    if configured.is_absolute():
+        return configured
+
+    configured_parts = configured.parts
+    if configured_parts and configured_parts[0] == "output":
+        return base_output_dir.joinpath(*configured_parts[1:])
+
+    return base_output_dir / configured
+
+
 def main() -> int:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    from config import load_config
-    from render_pdf import render_pdf_pages
-    from schemas import CardRecord, IssueRecord
+    try:
+        from .config import load_config
+        from .render_pdf import render_pdf_pages
+        from .schemas import CardRecord, IssueRecord
+    except ImportError:
+        from config import load_config
+        from render_pdf import render_pdf_pages
+        from schemas import CardRecord, IssueRecord
 
     print("[1/5] Loading config...")
     config = load_config(args.config)
@@ -41,13 +58,13 @@ def main() -> int:
         return 1
 
     base_output_dir = Path(args.output_dir) if args.output_dir else Path(config.output.base_dir)
-    screenshots_dir = base_output_dir / Path(config.output.screenshots_dir).name
-    debug_dir = base_output_dir / Path(config.output.debug_dir).name
-    extracted_cards_path = base_output_dir / Path(config.output.extracted_cards_json).name
-    raw_issues_path = base_output_dir / Path(config.output.raw_issues_json).name
-    issues_csv_path = base_output_dir / Path(config.output.issues_csv).name
-    issues_xlsx_path = base_output_dir / Path(config.output.issues_xlsx).name
-    summary_md_path = base_output_dir / Path(config.output.summary_md).name
+    screenshots_dir = resolve_output_path(base_output_dir, config.output.screenshots_dir)
+    debug_dir = resolve_output_path(base_output_dir, config.output.debug_dir)
+    extracted_cards_path = resolve_output_path(base_output_dir, config.output.extracted_cards_json)
+    raw_issues_path = resolve_output_path(base_output_dir, config.output.raw_issues_json)
+    issues_csv_path = resolve_output_path(base_output_dir, config.output.issues_csv)
+    issues_xlsx_path = resolve_output_path(base_output_dir, config.output.issues_xlsx)
+    summary_md_path = resolve_output_path(base_output_dir, config.output.summary_md)
 
     base_output_dir.mkdir(parents=True, exist_ok=True)
     screenshots_dir.mkdir(parents=True, exist_ok=True)
@@ -109,7 +126,10 @@ def main() -> int:
     _write_json(raw_issues_path, [issue.model_dump() for issue in issues])
 
     print("[5/5] Writing reports...")
-    from build_report import build_reports
+    try:
+        from .build_report import build_reports
+    except ImportError:
+        from build_report import build_reports
 
     output_files = [extracted_cards_path, raw_issues_path, issues_csv_path, issues_xlsx_path, summary_md_path]
     build_reports(

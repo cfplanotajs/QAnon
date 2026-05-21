@@ -40,6 +40,12 @@ pip install -r requirements.txt
 python src/run_pipeline.py --pdf input/product.pdf --context input/context.txt
 ```
 
+Also supported:
+
+```bash
+python -m src.run_pipeline --pdf input/product.pdf --context input/context.txt
+```
+
 ## Expected Outputs
 
 - `output/screenshots/page_001.png`
