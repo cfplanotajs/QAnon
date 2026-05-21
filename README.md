@@ -14,6 +14,7 @@ Phase 1 currently:
 
 - no AI extraction
 - no real QA checks
+- no Ollama/OpenAI integration yet
 - no Slack integration
 - no dashboard
 - no edited-file comparison
@@ -52,6 +53,7 @@ python src/run_pipeline.py --pdf input/product.pdf --context input/context.txt
 
 - **PDF path missing**: make sure `--pdf` points to an existing file.
 - **Context path missing**: make sure `--context` points to an existing file.
+- **Dependency installation issues**: rerun `pip install -r requirements.txt` in your active Python environment.
 - **PyMuPDF install issue**: reinstall dependencies with `pip install -r requirements.txt`.
 - **No output folder**: the pipeline creates output folders automatically.
 

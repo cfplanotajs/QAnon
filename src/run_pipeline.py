@@ -5,11 +5,6 @@ import json
 import logging
 from pathlib import Path
 
-from build_report import build_reports
-from config import load_config
-from render_pdf import render_pdf_pages
-from schemas import CardRecord, IssueRecord
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Phase 1 MVP pipeline for kids board/card game QA checker.")
@@ -28,6 +23,9 @@ def _write_json(path: Path, payload: list[dict]) -> None:
 def main() -> int:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    from config import load_config
+    from render_pdf import render_pdf_pages
+    from schemas import CardRecord, IssueRecord
 
     print("[1/5] Loading config...")
     config = load_config(args.config)
@@ -111,6 +109,8 @@ def main() -> int:
     _write_json(raw_issues_path, [issue.model_dump() for issue in issues])
 
     print("[5/5] Writing reports...")
+    from build_report import build_reports
+
     output_files = [extracted_cards_path, raw_issues_path, issues_csv_path, issues_xlsx_path, summary_md_path]
     build_reports(
         issues=issues,
