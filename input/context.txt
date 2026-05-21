@@ -1,0 +1,7 @@
+Product type: Kids animal facts card game
+Audience: Ages 5–8
+Market: USA
+Language: American English
+Card count: 60
+Check for: factual accuracy, scientific names, grammar, readability, duplicates, consistency, safety
+Tone: fun, simple, kid-friendly, educational
