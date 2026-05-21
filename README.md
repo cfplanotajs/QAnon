@@ -1,83 +1,63 @@
-# Board Game QA MVP
+# Kids Board/Card Game QA Checker MVP
 
-A local MVP pipeline for checking kids board/card game PDFs before production.
+This is a local MVP pipeline for checking kids board/card game PDFs before production.
 
-The tool accepts a PDF and a product context brief, extracts card/page text, runs QA checks, and outputs a designer-ready issue log.
+## Phase 1 Scope
 
-## MVP Scope
+Phase 1 currently:
+- renders PDF pages to screenshots
+- creates placeholder extracted card data
+- creates placeholder QA issues
+- exports CSV/XLSX/Markdown reports
 
-This tool checks:
+## What Phase 1 Does Not Do
 
-- factual accuracy
-- scientific names
-- spelling and grammar
-- kid readability
-- duplicate content
-- consistency
-- safety/brand risks
-
-It does not currently:
-
-- edit PDFs
-- compare revised files
-- integrate with Slack
-- assign tasks to designers
-- provide a web dashboard
+- no AI extraction
+- no real QA checks
+- no Slack integration
+- no dashboard
+- no edited-file comparison
 
 ## Requirements
 
 - Python 3.11+
-- Ollama installed locally
-- Recommended Ollama models:
-  - llama3.2-vision
-  - qwen2.5
 
 ## Setup
 
-Install dependencies:
-
+```bash
 pip install -r requirements.txt
-
-Install Ollama models:
-
-ollama pull llama3.2-vision
-ollama pull qwen2.5
+```
 
 ## Input
 
-Place your PDF here:
-
-input/product.pdf
-
-Add product context here:
-
-input/context.txt
-
-Example context:
-
-Product type: Kids animal facts card game
-Audience: Ages 5–8
-Market: USA
-Language: American English
-Card count: 60
-Check for: factual accuracy, scientific names, grammar, readability, duplicates, consistency, safety
-Tone: fun, simple, kid-friendly, educational
+- `input/product.pdf`
+- `input/context.txt`
 
 ## Run
 
+```bash
 python src/run_pipeline.py --pdf input/product.pdf --context input/context.txt
+```
 
-## Output
+## Expected Outputs
 
-The pipeline creates:
+- `output/screenshots/page_001.png`
+- `output/extracted_cards.json`
+- `output/raw_issues.json`
+- `output/qa_issues.csv`
+- `output/qa_issues.xlsx`
+- `output/qa_summary.md`
 
-output/extracted_cards.json
-output/raw_issues.json
-output/qa_issues.csv
-output/qa_issues.xlsx
-output/qa_summary.md
-output/screenshots/
+## Troubleshooting
 
-## Notes
+- **PDF path missing**: make sure `--pdf` points to an existing file.
+- **Context path missing**: make sure `--context` points to an existing file.
+- **PyMuPDF install issue**: reinstall dependencies with `pip install -r requirements.txt`.
+- **No output folder**: the pipeline creates output folders automatically.
 
-This MVP is designed to create a first-pass QA issue log. Human review is still required before sending corrections to designers.
+## Next Phases
+
+- **Phase 2**: Ollama visual extraction
+- **Phase 3**: copy/readability/safety QA
+- **Phase 4**: consistency QA
+- **Phase 5**: factual QA
