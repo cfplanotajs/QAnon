@@ -12,7 +12,7 @@ def _fallback_card(page_number: int, screenshot_path: Path) -> CardRecord:
     return CardRecord(
         card_id=f"CARD-{page_number:03d}",
         page_number=page_number,
-        title=f"Page {page_number}",
+        title="",
         common_name="",
         scientific_name="",
         main_fact="",
@@ -44,7 +44,7 @@ def _merge_card_defaults(payload: dict, page_number: int, screenshot_path: Path)
     merged = {
         "card_id": f"CARD-{page_number:03d}",
         "page_number": page_number,
-        "title": f"Page {page_number}",
+        "title": "",
         "common_name": "",
         "scientific_name": "",
         "main_fact": "",
