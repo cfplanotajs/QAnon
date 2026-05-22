@@ -74,8 +74,16 @@ def main() -> int:
 
     print("[2/5] Rendering PDF pages...")
     try:
-        rendered_pages = render_pdf_pages(pdf_path=pdf_path, screenshots_dir=screenshots_dir, dpi=config.pdf.dpi)
+        rendered_pages = render_pdf_pages(
+            pdf_path=pdf_path,
+            screenshots_dir=screenshots_dir,
+            dpi=config.pdf.dpi,
+            image_format=config.pdf.image_format,
+        )
     except RuntimeError as exc:
+        print(f"Error: {exc}")
+        return 1
+    except ValueError as exc:
         print(f"Error: {exc}")
         return 1
 
