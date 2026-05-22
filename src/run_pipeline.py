@@ -49,7 +49,7 @@ def _placeholder_cards(rendered_pages: list[tuple[int, Path]]) -> list[CardRecor
             CardRecord(
                 card_id=f"CARD-{page_number:03d}",
                 page_number=page_number,
-                title=f"Page {page_number}",
+                title="",
                 common_name="",
                 scientific_name="",
                 main_fact="",
