@@ -1,0 +1,6 @@
+pymupdf
+pandas
+openpyxl
+pydantic
+pyyaml
+requests
