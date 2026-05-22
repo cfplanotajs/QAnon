@@ -8,7 +8,7 @@ Phase 2 currently:
 - renders PDF pages to screenshots
 - runs visual extraction with local Ollama (`llama3.2-vision`) per screenshot
 - uses `input/context.txt` to guide extraction context only (not QA)
-- validates extracted card JSON with Pydantic schema
+- validates extracted card JSON with an expanded animal-card schema (title, pronunciation, riddle, fun fact, side attributes, and all visible text zones)
 - falls back safely per page when extraction fails
 - exports CSV/XLSX/Markdown reports
 
@@ -74,6 +74,7 @@ python -m src.run_pipeline --pdf input/product.pdf --context input/context.txt
 If Ollama extraction succeeds, `output/extracted_cards.json` should contain real extracted visible text where possible.
 In Phase 2, `output/extracted_cards.json` is the main output to inspect.
 `output/qa_issues.csv` and `output/qa_issues.xlsx` are expected to contain headers with zero issue rows until QA passes are implemented.
+Extraction now attempts to capture side attributes (for example diet/habitat/coating/size/speed/limbs) and bottom fun fact text when visible.
 
 ## Troubleshooting
 
