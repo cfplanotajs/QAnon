@@ -40,6 +40,25 @@ def _extract_json_object(raw_response: str) -> dict:
         return parsed
 
 
+def _merge_card_defaults(payload: dict, page_number: int, screenshot_path: Path) -> dict:
+    merged = {
+        "card_id": f"CARD-{page_number:03d}",
+        "page_number": page_number,
+        "title": f"Page {page_number}",
+        "common_name": "",
+        "scientific_name": "",
+        "main_fact": "",
+        "challenge_text": "",
+        "all_visible_text": "",
+        "screenshot_path": screenshot_path.as_posix(),
+    }
+    merged.update(payload)
+    merged["card_id"] = f"CARD-{page_number:03d}"
+    merged["page_number"] = page_number
+    merged["screenshot_path"] = screenshot_path.as_posix()
+    return merged
+
+
 def extract_cards_from_pages(
     *,
     rendered_pages: Sequence[tuple[int, Path]],
@@ -87,15 +106,9 @@ def extract_cards_from_pages(
 
         try:
             payload = _extract_json_object(raw_response)
-            extracted = CardRecord.model_validate(payload)
-            normalized = extracted.model_copy(
-                update={
-                    "card_id": card_id,
-                    "page_number": page_number,
-                    "screenshot_path": screenshot_path.as_posix(),
-                }
-            )
-            cards.append(normalized)
+            merged_payload = _merge_card_defaults(payload, page_number, screenshot_path)
+            extracted = CardRecord.model_validate(merged_payload)
+            cards.append(extracted)
         except (ValueError, json.JSONDecodeError) as exc:
             print(f"Warning: Invalid extraction JSON on page {page_number}: {exc}")
             (debug_dir / f"extraction_page_{page_number:03d}_invalid.txt").write_text(
