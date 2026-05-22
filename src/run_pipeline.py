@@ -91,7 +91,7 @@ def main() -> int:
     screenshots_dir.mkdir(parents=True, exist_ok=True)
     debug_dir.mkdir(parents=True, exist_ok=True)
 
-    _ = context_path.read_text(encoding="utf-8")
+    context_text = context_path.read_text(encoding="utf-8")
     prompt_template = Path("prompts/extraction_prompt.md").read_text(encoding="utf-8")
 
     print("[2/5] Rendering PDF pages...")
@@ -118,6 +118,7 @@ def main() -> int:
         cards = extract_cards_from_pages(
             rendered_pages=rendered_pages,
             prompt_template=prompt_template,
+            context_text=context_text,
             model=config.models.vision_extraction,
             base_url=config.ollama.base_url,
             timeout_seconds=config.ollama.timeout_seconds,
@@ -130,28 +131,8 @@ def main() -> int:
 
     _write_json(extracted_cards_path, [card.model_dump() for card in cards])
 
-    print("[4/5] Building placeholder issue log...")
+    print("[4/5] Building issue log...")
     issues: list[IssueRecord] = []
-    max_issues = min(2, len(cards))
-    for i in range(max_issues):
-        card = cards[i]
-        issues.append(
-            IssueRecord(
-                issue_id=f"ISSUE-{i + 1:03d}",
-                card_id=card.card_id,
-                page_number=card.page_number,
-                card_title=card.title,
-                issue_type="Other",
-                severity="Low",
-                current_text="Placeholder only",
-                problem="Phase 2 placeholder issue for pipeline testing only.",
-                suggested_fix="Replace with real QA findings in later phases.",
-                confidence="Low",
-                needs_human_review=True,
-                notes="Placeholder/test issue; not a real QA finding.",
-                screenshot_path=card.screenshot_path,
-            )
-        )
     _write_json(raw_issues_path, [issue.model_dump() for issue in issues])
 
     print("[5/5] Writing reports...")

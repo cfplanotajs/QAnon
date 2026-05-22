@@ -7,6 +7,7 @@ This is a local MVP pipeline for checking kids board/card game PDFs before produ
 Phase 2 currently:
 - renders PDF pages to screenshots
 - runs visual extraction with local Ollama (`llama3.2-vision`) per screenshot
+- uses `input/context.txt` to guide extraction context only (not QA)
 - validates extracted card JSON with Pydantic schema
 - falls back safely per page when extraction fails
 - exports CSV/XLSX/Markdown reports
@@ -71,6 +72,8 @@ python -m src.run_pipeline --pdf input/product.pdf --context input/context.txt
 - `output/qa_summary.md`
 
 If Ollama extraction succeeds, `output/extracted_cards.json` should contain real extracted visible text where possible.
+In Phase 2, `output/extracted_cards.json` is the main output to inspect.
+`output/qa_issues.csv` and `output/qa_issues.xlsx` are expected to contain headers with zero issue rows until QA passes are implemented.
 
 ## Troubleshooting
 

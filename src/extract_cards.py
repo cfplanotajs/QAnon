@@ -12,7 +12,7 @@ def _fallback_card(page_number: int, screenshot_path: Path) -> CardRecord:
     return CardRecord(
         card_id=f"CARD-{page_number:03d}",
         page_number=page_number,
-        title=f"Page {page_number}",
+        title="",
         common_name="",
         scientific_name="",
         main_fact="",
@@ -44,7 +44,7 @@ def _merge_card_defaults(payload: dict, page_number: int, screenshot_path: Path)
     merged = {
         "card_id": f"CARD-{page_number:03d}",
         "page_number": page_number,
-        "title": f"Page {page_number}",
+        "title": "",
         "common_name": "",
         "scientific_name": "",
         "main_fact": "",
@@ -63,6 +63,7 @@ def extract_cards_from_pages(
     *,
     rendered_pages: Sequence[tuple[int, Path]],
     prompt_template: str,
+    context_text: str,
     model: str,
     base_url: str,
     timeout_seconds: int,
@@ -76,6 +77,11 @@ def extract_cards_from_pages(
         card_id = f"CARD-{page_number:03d}"
         prompt = (
             f"{prompt_template.strip()}\n\n"
+            "Product Context:\n"
+            "Use the product context only to understand the document layout and likely fields.\n"
+            "Do not rewrite, simplify, QA, fact-check, or invent content.\n"
+            "Extract only visible text from the screenshot.\n\n"
+            f"{context_text.strip()}\n\n"
             f"Pipeline context:\n"
             f"- card_id: {card_id}\n"
             f"- page_number: {page_number}\n"

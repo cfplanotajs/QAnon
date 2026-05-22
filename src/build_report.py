@@ -107,10 +107,11 @@ def build_reports(
         *[f"- `{path.as_posix()}`" for path in output_files],
         "",
         "## Recommended Next Action",
-        "- Confirm that screenshots, extracted_cards.json, raw_issues.json, qa_issues.csv, qa_issues.xlsx, and qa_summary.md were generated correctly.",
-        "- Then proceed to Phase 2: Ollama visual extraction.",
+        "- Confirm that screenshots and extracted_cards.json were generated correctly and review extracted text quality.",
+        "- qa_issues.csv and qa_issues.xlsx are expected to be empty in Phase 2 because no QA checks run yet.",
+        "- Real issue detection will be added in later phases.",
         "",
-        "Phase 1 only: this run verifies PDF rendering, schema validation, and report generation. Real extraction and QA checks will be added in later phases.",
+        "Phase 2 extraction only: this run performs visual text extraction. No QA checks are executed yet.",
     ])
 
     summary_md_path.write_text("\n".join(summary_lines) + "\n", encoding="utf-8")
