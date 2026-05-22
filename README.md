@@ -2,31 +2,46 @@
 
 This is a local MVP pipeline for checking kids board/card game PDFs before production.
 
-## Phase 1 Scope
+## Phase 2 Scope (Current)
 
-Phase 1 currently:
+Phase 2 currently:
 - renders PDF pages to screenshots
-- creates placeholder extracted card data
-- creates placeholder QA issues
+- runs visual extraction with local Ollama (`llama3.2-vision`) per screenshot
+- validates extracted card JSON with Pydantic schema
+- falls back safely per page when extraction fails
 - exports CSV/XLSX/Markdown reports
 
-## What Phase 1 Does Not Do
+## Still Not Included Yet
 
-- no AI extraction
-- no real QA checks
-- no Ollama/OpenAI integration yet
+- no real QA checks (copy/readability/factual/consistency/safety)
 - no Slack integration
 - no dashboard
+- no database
 - no edited-file comparison
+- no automatic PDF editing
 
 ## Requirements
 
 - Python 3.11+
+- Ollama installed locally
 
 ## Setup
 
 ```bash
 pip install -r requirements.txt
+```
+
+Install the required local vision model:
+
+```bash
+ollama pull llama3.2-vision
+```
+
+Verify Ollama/model:
+
+```bash
+ollama list
+ollama run llama3.2-vision
 ```
 
 ## Input
@@ -55,17 +70,20 @@ python -m src.run_pipeline --pdf input/product.pdf --context input/context.txt
 - `output/qa_issues.xlsx`
 - `output/qa_summary.md`
 
+If Ollama extraction succeeds, `output/extracted_cards.json` should contain real extracted visible text where possible.
+
 ## Troubleshooting
 
 - **PDF path missing**: make sure `--pdf` points to an existing file.
 - **Context path missing**: make sure `--context` points to an existing file.
-- **Dependency installation issues**: rerun `pip install -r requirements.txt` in your active Python environment.
-- **PyMuPDF install issue**: reinstall dependencies with `pip install -r requirements.txt`.
-- **No output folder**: the pipeline creates output folders automatically.
+- **Ollama not running**: start Ollama and verify `http://localhost:11434` is reachable.
+- **`llama3.2-vision` not installed**: run `ollama pull llama3.2-vision`.
+- **Invalid JSON from model**: pipeline falls back per page and writes debug files in `output/debug/`.
+- **Extraction fields are empty**: check `output/debug/` for `_raw`, `_invalid`, and `_error` extraction files.
+- **Dependency installation issues**: rerun `pip install -r requirements.txt`.
 
 ## Next Phases
 
-- **Phase 2**: Ollama visual extraction
 - **Phase 3**: copy/readability/safety QA
 - **Phase 4**: consistency QA
 - **Phase 5**: factual QA

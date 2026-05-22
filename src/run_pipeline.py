@@ -3,11 +3,21 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import sys
 from pathlib import Path
+
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from src.build_report import build_reports
+from src.config import load_config
+from src.extract_cards import extract_cards_from_pages
+from src.render_pdf import render_pdf_pages
+from src.schemas import CardRecord, IssueRecord
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Phase 1 MVP pipeline for kids board/card game QA checker.")
+    parser = argparse.ArgumentParser(description="Phase 2 MVP pipeline for kids board/card game QA checker.")
     parser.add_argument("--pdf", required=True, help="Path to source PDF, e.g. input/product.pdf")
     parser.add_argument("--context", required=True, help="Path to context text file, e.g. input/context.txt")
     parser.add_argument("--config", default="config.yaml", help="Optional config path (default: config.yaml)")
@@ -32,17 +42,28 @@ def resolve_output_path(base_output_dir: Path, configured_path: str) -> Path:
     return base_output_dir / configured
 
 
+def _placeholder_cards(rendered_pages: list[tuple[int, Path]]) -> list[CardRecord]:
+    cards: list[CardRecord] = []
+    for page_number, shot_path in rendered_pages:
+        cards.append(
+            CardRecord(
+                card_id=f"CARD-{page_number:03d}",
+                page_number=page_number,
+                title=f"Page {page_number}",
+                common_name="",
+                scientific_name="",
+                main_fact="",
+                challenge_text="",
+                all_visible_text="",
+                screenshot_path=shot_path.as_posix(),
+            )
+        )
+    return cards
+
+
 def main() -> int:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    try:
-        from .config import load_config
-        from .render_pdf import render_pdf_pages
-        from .schemas import CardRecord, IssueRecord
-    except ImportError:
-        from config import load_config
-        from render_pdf import render_pdf_pages
-        from schemas import CardRecord, IssueRecord
 
     print("[1/5] Loading config...")
     config = load_config(args.config)
@@ -71,6 +92,7 @@ def main() -> int:
     debug_dir.mkdir(parents=True, exist_ok=True)
 
     _ = context_path.read_text(encoding="utf-8")
+    prompt_template = Path("prompts/extraction_prompt.md").read_text(encoding="utf-8")
 
     print("[2/5] Rendering PDF pages...")
     try:
@@ -91,22 +113,21 @@ def main() -> int:
         print("Error: No pages were rendered from the PDF.")
         return 1
 
-    print("[3/5] Creating placeholder card records...")
-    cards: list[CardRecord] = []
-    for page_number, shot_path in rendered_pages:
-        cards.append(
-            CardRecord(
-                card_id=f"CARD-{page_number:03d}",
-                page_number=page_number,
-                title=f"Page {page_number}",
-                common_name="",
-                scientific_name="",
-                main_fact="",
-                challenge_text="",
-                all_visible_text="",
-                screenshot_path=shot_path.as_posix(),
-            )
+    print("[3/5] Extracting card text...")
+    if config.extraction.enabled:
+        cards = extract_cards_from_pages(
+            rendered_pages=rendered_pages,
+            prompt_template=prompt_template,
+            model=config.models.vision_extraction,
+            base_url=config.ollama.base_url,
+            timeout_seconds=config.ollama.timeout_seconds,
+            debug_dir=debug_dir,
+            save_raw_responses=config.extraction.save_raw_responses,
         )
+    else:
+        print("Extraction is disabled in config; using placeholder card records.")
+        cards = _placeholder_cards(rendered_pages)
+
     _write_json(extracted_cards_path, [card.model_dump() for card in cards])
 
     print("[4/5] Building placeholder issue log...")
@@ -123,7 +144,7 @@ def main() -> int:
                 issue_type="Other",
                 severity="Low",
                 current_text="Placeholder only",
-                problem="Phase 1 placeholder issue for pipeline testing only.",
+                problem="Phase 2 placeholder issue for pipeline testing only.",
                 suggested_fix="Replace with real QA findings in later phases.",
                 confidence="Low",
                 needs_human_review=True,
@@ -134,11 +155,6 @@ def main() -> int:
     _write_json(raw_issues_path, [issue.model_dump() for issue in issues])
 
     print("[5/5] Writing reports...")
-    try:
-        from .build_report import build_reports
-    except ImportError:
-        from build_report import build_reports
-
     output_files = [extracted_cards_path, raw_issues_path, issues_csv_path, issues_xlsx_path, summary_md_path]
     build_reports(
         issues=issues,

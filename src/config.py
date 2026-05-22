@@ -34,11 +34,28 @@ class ReportsConfig(BaseModel):
     freeze_header_row: bool = True
 
 
+class ModelsConfig(BaseModel):
+    vision_extraction: str = "llama3.2-vision"
+
+
+class OllamaConfig(BaseModel):
+    base_url: str = "http://localhost:11434"
+    timeout_seconds: int = 120
+
+
+class ExtractionConfig(BaseModel):
+    enabled: bool = True
+    save_raw_responses: bool = True
+
+
 class AppConfig(BaseModel):
     pdf: PdfConfig = PdfConfig()
     output: OutputConfig = OutputConfig()
     qa: QaConfig = QaConfig()
     reports: ReportsConfig = ReportsConfig()
+    models: ModelsConfig = ModelsConfig()
+    ollama: OllamaConfig = OllamaConfig()
+    extraction: ExtractionConfig = ExtractionConfig()
 
 
 def load_config(config_path: str | Path | None = None) -> AppConfig:

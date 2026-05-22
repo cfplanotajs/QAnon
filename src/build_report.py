@@ -8,10 +8,7 @@ from typing import Sequence
 import pandas as pd
 from openpyxl import load_workbook
 
-try:
-    from .schemas import IssueRecord
-except ImportError:
-    from schemas import IssueRecord
+from src.schemas import IssueRecord
 
 ISSUE_COLUMNS = [
     "issue_id",

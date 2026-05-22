@@ -20,3 +20,14 @@ qa:
 reports:
   sort_by_severity: true
   freeze_header_row: true
+
+models:
+  vision_extraction: "llama3.2-vision"
+
+ollama:
+  base_url: "http://localhost:11434"
+  timeout_seconds: 120
+
+extraction:
+  enabled: true
+  save_raw_responses: true
