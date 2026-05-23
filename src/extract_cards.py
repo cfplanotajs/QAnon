@@ -7,6 +7,26 @@ from typing import Sequence
 from src.ollama_client import extract_with_vision_model
 from src.schemas import CardRecord
 
+CARD_TEXT_FIELDS = (
+    "title",
+    "common_name",
+    "scientific_name",
+    "pronunciation",
+    "main_fact",
+    "challenge_text",
+    "riddle_text",
+    "fun_fact",
+    "diet_type",
+    "habitat",
+    "coating",
+    "size",
+    "speed",
+    "limbs",
+    "other_attributes",
+    "all_visible_text",
+    "screenshot_path",
+)
+
 
 def _fallback_card(page_number: int, screenshot_path: Path) -> CardRecord:
     return CardRecord(
@@ -51,6 +71,11 @@ def _extract_json_object(raw_response: str) -> dict:
 
 
 def _merge_card_defaults(payload: dict, page_number: int, screenshot_path: Path) -> dict:
+    normalized_payload = dict(payload)
+    for field_name in CARD_TEXT_FIELDS:
+        if normalized_payload.get(field_name) is None:
+            normalized_payload[field_name] = ""
+
     merged = {
         "card_id": f"CARD-{page_number:03d}",
         "page_number": page_number,
@@ -72,7 +97,7 @@ def _merge_card_defaults(payload: dict, page_number: int, screenshot_path: Path)
         "all_visible_text": "",
         "screenshot_path": screenshot_path.as_posix(),
     }
-    merged.update(payload)
+    merged.update(normalized_payload)
     merged["card_id"] = f"CARD-{page_number:03d}"
     merged["page_number"] = page_number
     merged["screenshot_path"] = screenshot_path.as_posix()
