@@ -9,6 +9,8 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 from src.build_report import build_reports
 from src.config import load_config
 from src.extract_cards import extract_cards_from_pages
@@ -102,7 +104,7 @@ def main() -> int:
     debug_dir.mkdir(parents=True, exist_ok=True)
 
     context_text = context_path.read_text(encoding="utf-8")
-    prompt_template = Path("prompts/extraction_prompt.md").read_text(encoding="utf-8")
+    prompt_template = (PROJECT_ROOT / "prompts" / "extraction_prompt.md").read_text(encoding="utf-8")
 
     print("[2/5] Rendering PDF pages...")
     try:
