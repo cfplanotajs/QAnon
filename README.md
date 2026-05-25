@@ -1,83 +1,93 @@
-# Board Game QA MVP
+# Kids Board/Card Game QA Checker MVP
 
-A local MVP pipeline for checking kids board/card game PDFs before production.
+This is a local MVP pipeline for checking kids board/card game PDFs before production.
 
-The tool accepts a PDF and a product context brief, extracts card/page text, runs QA checks, and outputs a designer-ready issue log.
+## Phase 2 Scope (Current)
 
-## MVP Scope
+Phase 2 currently:
+- renders PDF pages to screenshots
+- runs visual extraction with local Ollama (`llama3.2-vision`) per screenshot
+- uses `input/context.txt` to guide extraction context only (not QA)
+- validates extracted card JSON with an expanded animal-card schema (title, pronunciation, riddle, fun fact, side attributes, and all visible text zones)
+- falls back safely per page when extraction fails
+- exports CSV/XLSX/Markdown reports
 
-This tool checks:
+## Still Not Included Yet
 
-- factual accuracy
-- scientific names
-- spelling and grammar
-- kid readability
-- duplicate content
-- consistency
-- safety/brand risks
-
-It does not currently:
-
-- edit PDFs
-- compare revised files
-- integrate with Slack
-- assign tasks to designers
-- provide a web dashboard
+- no real QA checks (copy/readability/factual/consistency/safety)
+- no Slack integration
+- no dashboard
+- no database
+- no edited-file comparison
+- no automatic PDF editing
 
 ## Requirements
 
 - Python 3.11+
 - Ollama installed locally
-- Recommended Ollama models:
-  - llama3.2-vision
-  - qwen2.5
 
 ## Setup
 
-Install dependencies:
-
+```bash
 pip install -r requirements.txt
+```
 
-Install Ollama models:
+Install the required local vision model:
 
+```bash
 ollama pull llama3.2-vision
-ollama pull qwen2.5
+```
+
+Verify Ollama/model:
+
+```bash
+ollama list
+ollama run llama3.2-vision
+```
 
 ## Input
 
-Place your PDF here:
-
-input/product.pdf
-
-Add product context here:
-
-input/context.txt
-
-Example context:
-
-Product type: Kids animal facts card game
-Audience: Ages 5–8
-Market: USA
-Language: American English
-Card count: 60
-Check for: factual accuracy, scientific names, grammar, readability, duplicates, consistency, safety
-Tone: fun, simple, kid-friendly, educational
+- `input/product.pdf`
+- `input/context.txt`
 
 ## Run
 
+```bash
 python src/run_pipeline.py --pdf input/product.pdf --context input/context.txt
+```
 
-## Output
+Also supported:
 
-The pipeline creates:
+```bash
+python -m src.run_pipeline --pdf input/product.pdf --context input/context.txt
+```
 
-output/extracted_cards.json
-output/raw_issues.json
-output/qa_issues.csv
-output/qa_issues.xlsx
-output/qa_summary.md
-output/screenshots/
+## Expected Outputs
 
-## Notes
+- `output/screenshots/page_001.png`
+- `output/extracted_cards.json`
+- `output/raw_issues.json`
+- `output/qa_issues.csv`
+- `output/qa_issues.xlsx`
+- `output/qa_summary.md`
 
-This MVP is designed to create a first-pass QA issue log. Human review is still required before sending corrections to designers.
+If Ollama extraction succeeds, `output/extracted_cards.json` should contain real extracted visible text where possible.
+In Phase 2, `output/extracted_cards.json` is the main output to inspect.
+`output/qa_issues.csv` and `output/qa_issues.xlsx` are expected to contain headers with zero issue rows until QA passes are implemented.
+Extraction now attempts to capture side attributes (for example diet/habitat/coating/size/speed/limbs) and bottom fun fact text when visible.
+
+## Troubleshooting
+
+- **PDF path missing**: make sure `--pdf` points to an existing file.
+- **Context path missing**: make sure `--context` points to an existing file.
+- **Ollama not running**: start Ollama and verify `http://localhost:11434` is reachable.
+- **`llama3.2-vision` not installed**: run `ollama pull llama3.2-vision`.
+- **Invalid JSON from model**: pipeline falls back per page and writes debug files in `output/debug/`.
+- **Extraction fields are empty**: check `output/debug/` for `_raw`, `_invalid`, and `_error` extraction files.
+- **Dependency installation issues**: rerun `pip install -r requirements.txt`.
+
+## Next Phases
+
+- **Phase 3**: copy/readability/safety QA
+- **Phase 4**: consistency QA
+- **Phase 5**: factual QA
