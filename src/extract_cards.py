@@ -59,15 +59,17 @@ def _extract_json_object(raw_response: str) -> dict:
             return parsed
         raise ValueError("Top-level JSON is not an object.")
     except json.JSONDecodeError:
-        start = raw_response.find("{")
-        end = raw_response.rfind("}")
-        if start == -1 or end == -1 or end <= start:
-            raise ValueError("No JSON object found in response.")
-        snippet = raw_response[start : end + 1]
-        parsed = json.loads(snippet)
-        if not isinstance(parsed, dict):
-            raise ValueError("Extracted JSON is not an object.")
-        return parsed
+        decoder = json.JSONDecoder()
+        for idx, char in enumerate(raw_response):
+            if char != "{":
+                continue
+            try:
+                parsed, _ = decoder.raw_decode(raw_response[idx:])
+            except json.JSONDecodeError:
+                continue
+            if isinstance(parsed, dict):
+                return parsed
+        raise ValueError("No valid JSON object found in response.")
 
 
 def _merge_card_defaults(payload: dict, page_number: int, screenshot_path: Path) -> dict:
